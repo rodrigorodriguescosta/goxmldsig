@@ -15,11 +15,12 @@ import (
 )
 
 type SigningContext struct {
-	Hash          crypto.Hash
-	KeyStore      X509KeyStore
-	IdAttribute   string
-	Prefix        string
-	Canonicalizer Canonicalizer
+	Hash             crypto.Hash
+	KeyStore         X509KeyStore
+	ElementContainId string
+	IdAttribute      string
+	Prefix           string
+	Canonicalizer    Canonicalizer
 }
 
 func NewDefaultSigningContext(ks X509KeyStore) *SigningContext {
@@ -90,13 +91,12 @@ func (ctx *SigningContext) constructSignedInfo(el *etree.Element, enveloped bool
 	// /SignedInfo/Reference
 	reference := ctx.createNamespacedElement(signedInfo, ReferenceTag)
 
-	dataId := el.SelectAttrValue(ctx.IdAttribute, "")
+	dataId := el.FindElement(ctx.ElementContainId).SelectAttrValue(ctx.IdAttribute, "")
 	if dataId == "" {
 		reference.CreateAttr(URIAttr, "")
 	} else {
 		reference.CreateAttr(URIAttr, "#"+dataId)
 	}
-
 
 	// /SignedInfo/Reference/Transforms
 	transforms := ctx.createNamespacedElement(reference, TransformsTag)
